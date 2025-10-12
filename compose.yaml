@@ -1,0 +1,84 @@
+networks:
+  public_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  private_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+services:
+  react_app:
+    build:
+      context: ./reactjs
+    container_name: react_app
+    ports:
+      - "8080:8080"
+    networks:
+      - public_network
+    depends_on:
+      - fastapi_gateway
+
+  fastapi_gateway:
+    build:
+      context: ./api_gateway
+    container_name: fastapi_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql://root:password@mysql_db:3306/appdb
+      - REDIS_URL=redis://redis_cache:6379
+      - AI_TEAM_URL=http://ai_team:5000
+    networks:
+      - public_network
+      - private_network
+    depends_on:
+      - mysql_db
+      - redis_cache
+      - ai_team
+
+  redis_cache:
+    image: redis:8-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_cache_volume:/data
+    networks:
+      - private_network
+
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_db_volume:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword
+    networks:
+      - private_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  ai_team:
+    build:
+      context: ./ai_team
+    container_name: ai_team
+    volumes:
+      - ai_team_volume:/team
+    networks:
+      - private_network
+
+volumes:
+  mysql_db_volume:
+  redis_cache_volume:
+  ai_team_volume:

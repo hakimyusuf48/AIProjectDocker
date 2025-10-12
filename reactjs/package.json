@@ -1,0 +1,9 @@
+{
+  "name": "react_app_placeholder",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Temporary placeholder service until React app is added",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
