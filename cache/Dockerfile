@@ -5,9 +5,10 @@ FROM python:3.10-slim
 WORKDIR /cache
 
 # Install required packages
-# It's a good practice to copy requirements first to leverage Docker layer caching
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN python -m venv cache \
+    source cache/bin/activate \
+    pip install -r requirements.txt
 
 # Copy the application code into the container
 COPY . .
