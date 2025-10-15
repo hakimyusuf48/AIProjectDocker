@@ -4,8 +4,9 @@ FROM redis:8-alpine
 WORKDIR /cache
 
 # Install required packages
+RUN pkg install python3 -y
 COPY requirements.txt .
-RUN python -m venv cache \
+RUN python3 -m venv cache \
     source cache/bin/activate \
     pip install -r requirements.txt
 
